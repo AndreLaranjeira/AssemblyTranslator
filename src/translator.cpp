@@ -9,8 +9,8 @@ Translator::Translator() {
 }
 
 Translator::~Translator() {
-  for(auto const& pair : opcodes_table)
-    delete opcodes_table[pair.first];
+  for(auto const& pair : instructions_table)
+    delete instructions_table[pair.first];
 }
 
 void translate_file(string input_name, string output_name) {

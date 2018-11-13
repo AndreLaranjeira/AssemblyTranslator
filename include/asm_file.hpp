@@ -11,6 +11,8 @@
 #include <regex>
 #include <string>
 
+#include "error_logger.hpp"
+
 // Namespace:
 using namespace std;
 
@@ -46,12 +48,6 @@ class AsmFile {
     AsmFile(string, string, ios::openmode);
     ~AsmFile();
     list <Line> parse_file();
-
-    // Debug methods:
-
-    // Getters:
-
-    // Setters:
 
 };
 
