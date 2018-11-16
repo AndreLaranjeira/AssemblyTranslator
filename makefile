@@ -19,16 +19,16 @@ SDIR = src
 
 # Lista de dependências do projeto (arquivos .h).
 
-_DEPS = translator.hpp
+_DEPS = asm_file.hpp error_logger.hpp translator.hpp
 
 # Lista de arquivos intermediários de compilação gerados pelo projeto
 # (arquivos .o).
 
-_OBJ = tradutor.o translator.o
+_OBJ = asm_file.o error_logger.o main.o translator.o
 
 # Lista de arquivos fontes utilizados para compilação.
 
-_SRC = tradutor.cpp translator.cpp
+_SRC = asm_file.cpp error_logger.cpp main.cpp translator.cpp
 
 # Junção dos nomes de arquivos com seus respectivos caminhos.
 
