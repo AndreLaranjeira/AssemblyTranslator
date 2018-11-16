@@ -23,9 +23,9 @@ AsmFile::~AsmFile() {
     file_pointer.close();
 }
 
-list <Line> AsmFile::parse_file() {
+deque <Line> AsmFile::parse_file() {
 
-  list <Line> parse_result;
+  deque <Line> parse_result;
 
   regex command("^(?:(.*): ?)?([^ :]*)(?: (.*))?$");
   smatch search_matches;

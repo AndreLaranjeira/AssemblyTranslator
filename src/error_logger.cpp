@@ -12,8 +12,8 @@ ErrorLogger::~ErrorLogger() {
 
 }
 
-int ErrorLogger::print_error(ErrorSeverity severity, ErrorType type,
-                             string msg, int line_num) {
+int ErrorLogger::log_error(ErrorSeverity severity, ErrorType type, string msg,
+                           int line_num) {
 
   switch (severity) {
 

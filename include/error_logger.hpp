@@ -38,7 +38,7 @@ class ErrorLogger {
     // Class methods:
     ErrorLogger(string);
     ~ErrorLogger();
-    int print_error(ErrorSeverity, ErrorType, string = "", int = -1);
+    int log_error(ErrorSeverity, ErrorType, string = "", int = -1);
 
 };
 

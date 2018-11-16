@@ -26,7 +26,7 @@ int main(int argc, char const *argv[]) {
 
   // Check argument number.
   if(argc != 2) {
-      error_logger.print_error(FATAL, ARGS, "./tradutor programa");
+      error_logger.log_error(FATAL, ARGS, "./tradutor programa");
       exit(ARGS);
   }
 

@@ -5,6 +5,7 @@
 #define ASSEMBLY_FILE_H_
 
 // Includes:
+#include <deque>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -20,9 +21,9 @@ using namespace std;
 struct Line {
   string label;
   string operation;
-  list <string> operand_list;
+  deque <string> operand_list;
 
-  Line(string p_label, string p_operation, list <string> p_operand_list) {
+  Line(string p_label, string p_operation, deque <string> p_operand_list) {
     label = p_label;
     operation = p_operation;
     operand_list = p_operand_list;
@@ -47,7 +48,7 @@ class AsmFile {
     // Class methods:
     AsmFile(string, string, ios::openmode);
     ~AsmFile();
-    list <Line> parse_file();
+    deque <Line> parse_file();
 
 };
 
