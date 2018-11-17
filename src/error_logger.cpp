@@ -15,13 +15,15 @@ ErrorLogger::~ErrorLogger() {
 int ErrorLogger::log_error(ErrorSeverity severity, ErrorType type, string msg,
                            int line_num) {
 
+  cerr << endl;
+
   switch (severity) {
 
     case FATAL:
       cerr << "[FATAL ERROR] ";
       break;
 
-    case STANDARD:
+    case ERROR:
       cerr << "[ERROR] ";
       break;
 
@@ -41,16 +43,16 @@ int ErrorLogger::log_error(ErrorSeverity severity, ErrorType type, string msg,
       cerr << "Could not open a given file!" << endl;
       break;
 
-    case TRANSLATION:
-      cerr << "Could not finish translation!" << endl;
-      break;
-
     case INSTRUCTION:
       cerr << "Invalid instruction found in assembly code!" << endl;
       break;
 
-    case OVERFLOW:
-      cerr << "Multiplication overflow occurs!" << endl;
+    case PRE_PROCESSING:
+      cerr << "Could not pre-process a given file!" << endl;
+      break;
+
+    case TRANSLATION:
+      cerr << "Could not translate a given file!" << endl;
       break;
 
     case OTHER:

@@ -14,16 +14,16 @@ using namespace std;
 // Enumerations:
 typedef enum {
   FATAL,
-  STANDARD,
+  ERROR,
   WARNING
 } ErrorSeverity;
 
 typedef enum {
   ARGS = 1,
   IO = 2,
-  TRANSLATION = 3,
-  INSTRUCTION = 4,
-  OVERFLOW = 5,
+  INSTRUCTION = 3,
+  PRE_PROCESSING = 4,
+  TRANSLATION = 5,
   OTHER = 6
 } ErrorType;
 
