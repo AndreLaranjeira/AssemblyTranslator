@@ -13,6 +13,7 @@ using namespace std;
 
 // Macros:
 #define DEBUG true
+#define FUNCTIONS_FILE "src/functions"
 
 // Enums:
 typedef enum {
@@ -20,7 +21,8 @@ typedef enum {
   CANNOT_OPEN_INPUT_FILE = 2,
   PRE_PROCESSING_FAILED = 3,
   TRANSLATION_FAILED = 4,
-  CANNOT_OPEN_OUTPUT_FILE = 5
+  CANNOT_OPEN_FUNCTIONS_FILE = 5,
+  CANNOT_OPEN_OUTPUT_FILE = 6
 } ExitTypes;
 
 // Function headers:
@@ -29,7 +31,7 @@ typedef enum {
 int main(int argc, char const *argv[]) {
 
   // Variable declarations:
-  AsmFile *input, *output;
+  AsmFile *functions, *input, *output;
   ErrorLogger error_logger("Main.cpp");
   string message;
   Translator translator("IA-32 traslator");
@@ -56,7 +58,7 @@ int main(int argc, char const *argv[]) {
 
   // Pre-process input file.
 
-  if(input->pre_process() != 0) {
+  if(input->pre_process(true) != 0) {
     message = "File name is " + (string) argv[1] + ".asm";
     error_logger.log_error(FATAL, PRE_PROCESSING, message);
     delete input;
@@ -68,7 +70,7 @@ int main(int argc, char const *argv[]) {
   if(DEBUG)
     input->print_buffer();
 
-  cout << "::Loading translator contents..." << endl;
+  cout << "::Loading translator parameters..." << endl;
 
   translator.set_asm_buffer(input->get_buffer());
 
@@ -98,19 +100,56 @@ int main(int argc, char const *argv[]) {
   translator.add_instruction("SPACE", true, 0, 1);
   translator.add_instruction("CONST", true, 1, 1);
 
-  cout << "::Translator contents successfully loaded!" << endl;
+  cout << "::Translator parameters successfully loaded!" << endl;
 
   if(DEBUG)
     translator.print_instructions();
 
-
   // Translate file.
+
+  translator.translate_asm_buffer();
+
+  // Append hand-written functions.
+
+  cout << "::Appending auxiliary functions..." << endl;
+
+  functions = new AsmFile(FUNCTIONS_FILE, ".asm", ios::in);
+
+  if(!functions->is_open()) {
+    message = "File name is " + (string) FUNCTIONS_FILE + ".asm";
+    error_logger.log_error(FATAL, IO, message);
+    delete functions;
+    exit(CANNOT_OPEN_FUNCTIONS_FILE);
+  }
+
+  functions->parse_file(false);
+  translator.append_functions(functions->get_buffer());
+
+  delete functions;
+
+  cout << "::Auxiliary functions successfully appended!" << endl;
 
   // Generate output file.
 
-  cout << "::File translation was successful!" << endl << endl;
+  cout << "::Generating output file..." << endl;
 
-  // Clean up.
+  output = new AsmFile(argv[1], ".s", ios::out);
+
+  if(!output->is_open()) {
+    message = "File name is " + (string) argv[1] + ".s";
+    error_logger.log_error(FATAL, IO, message);
+    delete output;
+    exit(CANNOT_OPEN_OUTPUT_FILE);
+  }
+
+  output->set_buffer(translator.get_ia32_buffer());
+  output->write_buffer_contents();
+
+  delete output;
+
+  cout << "::Output file successfully generated!" << endl;
+
+  cout << "::File translation was successful!" << endl << endl;
 
   return 0;
 

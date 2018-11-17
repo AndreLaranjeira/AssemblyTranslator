@@ -34,7 +34,32 @@ int Translator::add_instruction(string name, bool p_needs_label,
 
 }
 
-void Translator::translate_buffer() {
+int Translator::append_functions(deque <Line> functions) {
+
+  for(auto const& function : functions)
+    ia32_buffer.push_back(function);
+
+  return 0;
+
+}
+
+int Translator::translate_asm_buffer() {
+
+  // This is a PLACEHOLDER CODE meant for TESTS ONLY!
+
+  deque <string> operand_list;
+
+  operand_list.push_back(".text");
+  ia32_buffer.push_back(Line(1, "", "section", operand_list));
+  operand_list.clear();
+
+  operand_list.push_back("_start");
+  ia32_buffer.push_back(Line(1, "", "global", operand_list));
+  operand_list.clear();
+
+  ia32_buffer.push_back(Line(1, "_start", "", operand_list));
+
+  return 0;
 
 }
 
@@ -76,6 +101,11 @@ void Translator::print_instructions() {
 
 }
 
+// Getters:
+deque <Line> Translator::get_ia32_buffer() {
+  return ia32_buffer;
+}
+
 // Setters:
 void Translator::set_asm_buffer(deque <Line> p_asm_buffer) {
   asm_buffer = p_asm_buffer;
@@ -83,9 +113,4 @@ void Translator::set_asm_buffer(deque <Line> p_asm_buffer) {
 
 void Translator::set_debug_mode(bool p_debug_mode) {
   debug_mode = p_debug_mode;
-}
-
-// Private methods:
-void Translator::append_sub_routines() {
-
 }

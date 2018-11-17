@@ -23,7 +23,7 @@ bool AsmFile::is_open() {
   return file_pointer.is_open();
 }
 
-int AsmFile::parse_file() {
+int AsmFile::parse_file(bool format_case) {
 
   bool parse_error = false;
   deque <string> operand_list;
@@ -43,8 +43,13 @@ int AsmFile::parse_file() {
   // Iterate over the original code file
   while (getline(file_pointer, file_line)) {
 
-    // Removes comments and replaces extra spaces
+    // Removes comments and replaces extra spaces.
     formated_line = format_line(file_line);
+
+    // Possible case formatting.
+    if(format_case)
+      for (auto & c: formated_line)
+        c = toupper(c);
 
     if(regex_search(formated_line, search_matches, command)) {
 
@@ -76,7 +81,7 @@ int AsmFile::parse_file() {
 
 }
 
-int AsmFile::pre_process() {
+int AsmFile::pre_process(bool format_case) {
 
   bool pre_error = false;
   deque <string> operand_list;
@@ -99,6 +104,11 @@ int AsmFile::pre_process() {
 
     // Removes comments and replaces extra spaces
     formated_line = format_line(file_line);
+
+    // Possible case formatting.
+    if(format_case)
+      for (auto & c: formated_line)
+        c = toupper(c);
 
     if(regex_search(formated_line, search_matches, command)) {
 
@@ -195,6 +205,39 @@ int AsmFile::pre_process() {
 
 }
 
+int AsmFile::write_buffer_contents() {
+
+  for(auto const& line : buffer) {
+
+    if(line.label != "")
+      file_pointer << line.label << ":\t";
+
+    if(line.operation != "")
+      file_pointer << line.operation;
+
+    for(auto iter = line.operand_list.begin(); iter != line.operand_list.end();
+        iter++) {
+
+      if (iter != line.operand_list.begin())
+        file_pointer << ", ";
+
+      else
+        file_pointer << " ";
+
+      file_pointer << *iter;
+
+    }
+
+    file_pointer << endl;
+
+  }
+
+  file_pointer << endl;
+
+  return 0;
+
+}
+
 // Debug methods:
 void AsmFile::print_buffer() {
 
@@ -235,6 +278,11 @@ void AsmFile::print_buffer() {
 // Getters:
 deque <Line> AsmFile::get_buffer() {
   return buffer;
+}
+
+// Setters:
+void AsmFile::set_buffer(deque <Line> p_buffer) {
+  buffer = p_buffer;
 }
 
 // Private methods:
@@ -313,11 +361,6 @@ string AsmFile::format_line(string line) {
   formated_line = regex_replace(formated_line, offset_plus2, "+");
   formated_line = regex_replace(formated_line, first_space, "");
   formated_line = regex_replace(formated_line, last_space, "");
-
-  // Converts the whole string to uppercase.
-
-  for (auto & c: formated_line)
-    c = toupper(c);
 
   return formated_line;
 

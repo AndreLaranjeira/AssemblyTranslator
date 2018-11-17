@@ -41,14 +41,18 @@ class AsmFile {
     AsmFile(string, string, ios::openmode);
     ~AsmFile();
     bool is_open();
-    int parse_file();
-    int pre_process();
+    int parse_file(bool format_case = false);
+    int pre_process(bool format_case = false);
+    int write_buffer_contents();
 
     // Debug methods:
     void print_buffer();
 
     // Getters:
     deque <Line> get_buffer();
+
+    // Setters:
+    void set_buffer(deque <Line>);
 
 };
 

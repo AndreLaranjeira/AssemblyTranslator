@@ -39,21 +39,20 @@ class Translator {
   private:
     // Variables:
     bool debug_mode;
-    deque <Line> asm_buffer;
-    deque <string> ia32_buffer;
+    deque <Line> asm_buffer, ia32_buffer;
     ErrorLogger error_logger;
     map <string, Instruction> instructions_table;
     string name;
 
     // Methods:
-    void append_sub_routines();
 
   public:
     // Class methods:
     Translator(string);
     ~Translator();
     int add_instruction(string, bool, unsigned int, unsigned int);
-    void translate_buffer();
+    int append_functions(deque <Line>);
+    int translate_asm_buffer();
 
     // Debug methods:
     void print_asm_buffer();
@@ -61,6 +60,7 @@ class Translator {
     void print_instructions();
 
     // Getters:
+    deque <Line> get_ia32_buffer();
 
     // Setters:
     void set_asm_buffer(deque <Line>);
