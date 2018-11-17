@@ -21,10 +21,11 @@ typedef enum {
 typedef enum {
   ARGS = 1,
   IO = 2,
-  INSTRUCTION = 3,
-  PRE_PROCESSING = 4,
-  TRANSLATION = 5,
-  OTHER = 6
+  DATA_OVERWRITE = 3,
+  INSTRUCTION = 4,
+  PRE_PROCESSING = 5,
+  TRANSLATION = 6,
+  OTHER = 7
 } ErrorType;
 
 // Class headers:

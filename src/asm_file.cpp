@@ -67,11 +67,11 @@ int AsmFile::parse_file() {
   }
 
   if(parse_error) {
-    cout << "::Parsing " << file_name << file_ext << " failed!" << endl;
+    cout << "::Failed to parse " << file_name << file_ext << "!" << endl;
     return -1;
   }
 
-  cout << "::Parsing " << file_name << file_ext << " was successful!" << endl;
+  cout << "::Successfully parsed " << file_name << file_ext << "!" << endl;
   return 0;
 
 }
@@ -185,20 +185,22 @@ int AsmFile::pre_process() {
   }
 
   if(pre_error) {
-    cout << "::Pre-processing " << file_name << file_ext << " failed!" << endl;
+    cout << "::Failed to pre-process " << file_name << file_ext << "!" << endl;
     return -1;
   }
 
-  cout << "::Pre-processing " << file_name << file_ext << " was successful!";
+  cout << "::Successfully pre-processed " << file_name << file_ext << "!";
   cout << endl;
   return 0;
 
 }
 
-int AsmFile::print_buffer() {
+// Debug methods:
+void AsmFile::print_buffer() {
 
   cout << endl;
-  cout << "[DEBUG] Buffer contents for file " + file_name + file_ext << endl;
+  cout << "[DEBUG] Buffer contents for file " + file_name + file_ext << ":";
+  cout << endl;
 
   for(auto const& line : buffer) {
     cout << line.number << " - ";
@@ -227,8 +229,6 @@ int AsmFile::print_buffer() {
   }
 
   cout << endl;
-
-  return 0;
 
 }
 

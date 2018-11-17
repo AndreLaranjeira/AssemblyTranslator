@@ -13,26 +13,10 @@
 #include <string>
 
 #include "error_logger.hpp"
+#include "line.hpp"
 
 // Namespace:
 using namespace std;
-
-// Structs:
-struct Line {
-  int number;
-  string label;
-  string operation;
-  deque <string> operand_list;
-
-  Line(int p_number, string p_label, string p_operation,
-       deque <string> p_operand_list) {
-    number = p_number;
-    label = p_label;
-    operation = p_operation;
-    operand_list = p_operand_list;
-  }
-
-};
 
 // Classes:
 class AsmFile {
@@ -59,7 +43,9 @@ class AsmFile {
     bool is_open();
     int parse_file();
     int pre_process();
-    int print_buffer();
+
+    // Debug methods:
+    void print_buffer();
 
     // Getters:
     deque <Line> get_buffer();

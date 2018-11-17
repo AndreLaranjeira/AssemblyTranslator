@@ -43,6 +43,10 @@ int ErrorLogger::log_error(ErrorSeverity severity, ErrorType type, string msg,
       cerr << "Could not open a given file!" << endl;
       break;
 
+    case DATA_OVERWRITE:
+      cerr << "Attempted to overwrite data!" << endl;
+      break;
+
     case INSTRUCTION:
       cerr << "Invalid instruction found in assembly code!" << endl;
       break;

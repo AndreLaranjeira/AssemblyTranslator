@@ -32,7 +32,7 @@ int main(int argc, char const *argv[]) {
   AsmFile *input, *output;
   ErrorLogger error_logger("Main.cpp");
   string message;
-  Translator translator;
+  Translator translator("IA-32 traslator");
 
   translator.set_debug_mode(DEBUG); // Sets up possible debug mode.
 
@@ -54,6 +54,8 @@ int main(int argc, char const *argv[]) {
     exit(CANNOT_OPEN_INPUT_FILE);
   }
 
+  // Pre-process input file.
+
   if(input->pre_process() != 0) {
     message = "File name is " + (string) argv[1] + ".asm";
     error_logger.log_error(FATAL, PRE_PROCESSING, message);
@@ -61,12 +63,46 @@ int main(int argc, char const *argv[]) {
     exit(PRE_PROCESSING_FAILED);
   }
 
+  // Load input file contents in the translator.
+
   if(DEBUG)
     input->print_buffer();
 
+  cout << "::Loading translator contents..." << endl;
+
+  translator.set_asm_buffer(input->get_buffer());
+
   delete input;
 
-  // Load operations into translator.
+  // Load instructions into translator.
+  translator.add_instruction("ADD", false, 1, 1);
+  translator.add_instruction("SUB", false, 1, 1);
+  translator.add_instruction("MULT", false, 1, 1);
+  translator.add_instruction("DIV", false, 1, 1);
+  translator.add_instruction("JMP", false, 1, 1);
+  translator.add_instruction("JMPN", false, 1, 1);
+  translator.add_instruction("JMPP", false, 1, 1);
+  translator.add_instruction("JMPZ", false, 1, 1);
+  translator.add_instruction("COPY", false, 2, 2);
+  translator.add_instruction("LOAD", false, 1, 1);
+  translator.add_instruction("STORE", false, 1, 1);
+  translator.add_instruction("INPUT", false, 1, 1);
+  translator.add_instruction("OUTPUT", false, 1, 1);
+  translator.add_instruction("C_INPUT", false, 1, 1);
+  translator.add_instruction("C_OUTPUT", false, 1, 1);
+  translator.add_instruction("S_INPUT", false, 2, 2);
+  translator.add_instruction("S_OUTPUT", false, 2, 2);
+  translator.add_instruction("STOP", false, 0, 0);
+
+  translator.add_instruction("SECTION", false, 1, 1);
+  translator.add_instruction("SPACE", true, 0, 1);
+  translator.add_instruction("CONST", true, 1, 1);
+
+  cout << "::Translator contents successfully loaded!" << endl;
+
+  if(DEBUG)
+    translator.print_instructions();
+
 
   // Translate file.
 
