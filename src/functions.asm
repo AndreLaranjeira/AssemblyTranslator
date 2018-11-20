@@ -1,6 +1,6 @@
 ; Auxiliary procedures used for file translation.
 
-; Procedure to read an integer.
+; Function to read an integer.
 LerInteiro:
 
   enter 0, 0      ; Create a stack frame.
@@ -9,16 +9,142 @@ LerInteiro:
 
 ret
 
-; Procedure to write an integer.
+; Function to write an integer (Label id: WI).
+;
+; Parameters:
+;   Address where the number is being stored (4 bytes).
+;
 EscreverInteiro:
 
-  enter 0, 0      ; Create a stack frame.
+              enter 0, 0      ; Create a stack frame.
 
-  leave           ; Destroy the previously created stack frame.
+              ; Save the values of the needed registers in the stack.
+              ; Except eax, because we will overwrite it with the return value.
 
-ret
+              push  ebx
+              push  ecx
+              push  edx
+              push  esi
 
-; Procedure to read a character.
+              sub   esi, esi            ; Clear esi. It will be used to count
+                                        ; the number of chars printed. (Not
+                                        ; common practice, but we will need all
+                                        ; the other registers. If only we had
+                                        ; more registers...)
+              mov   ecx, [ebp + 8]      ; Store the number's address in ecx.
+              mov   ebx, [ecx]          ; Store the actual number in ebx.
+
+              cmp   ebx, 0              ; See if the number given is greater
+                                        ; than 0.
+              jge   WI_Positive         ; If it is, the number is positive.
+
+              ; If the above jump doesn't trigger, the number is negative.
+              ; Thus, we must print a '-' char and find the 2's complement of
+              ; the number.
+
+WI_Negative:  push  ebx     ; Save the number to be printed.
+
+              ; Store the '-' in the stack.
+              sub   esp, 1              ; "Allocate" a byte in the stack.
+              mov   byte [esp], 0x2D    ; Save the '-' char.
+
+              ; Print the char in the top of the stack.
+
+              mov   eax, 4
+              mov   ebx, 1
+              mov   ecx, esp
+              mov   edx, 1
+              int   0x80
+
+              add   esp, 1        ; Burn the '-' from the stack.
+              pop   ebx           ; Restore the original number.
+
+              neg   ebx           ; Find the 2's complement of the number. (That
+                                  ; way we can reuse the function logic for
+                                  ; positive numbers).
+              add   esi, 1        ; Add 1 to the number of chars printed.
+
+WI_Positive:
+
+              ; Now we need to keep dividing the given number by 10 to obtain
+              ; all of it's digits.
+
+              ; Altough we are already counting the number of chars printed in
+              ; esi, we will need to count the number of digits in the number in
+              ; ecx. This is so because we will store all digits in the stack
+              ; and we will need a loop variable to remove and print them. That
+              ; variable is ecx.
+
+              sub   ecx, ecx      ; Clear ecx to count the number of digits.
+              mov   eax, ebx      ; Move the number to eax for division.
+
+              ; Ok, all set to start dividing!
+
+WI_R_Digit:   sub   edx, edx      ; Clear edx. (Sign extend a positive number in
+                                  ; eax).
+              mov   ebx, 10       ; Move the divisor to ebx
+              div   ebx           ; Divide the number by a 4 byte 10. (Because
+                                  ; the quotient size is 4 bytes).
+
+              ; Store the remainder (always occupies 1 byte) in the stack.
+              sub   esp, 1        ; "Allocate" a byte in the stack.
+              add   dl, 0x30      ; Convert digit to char.
+              mov   [esp], dl     ; Save char in the stack.
+
+              add   ecx, 1        ; Add 1 to the digit count.
+
+              ; Check the contents of the quotient.
+              cmp   eax, 0
+              ja    WI_R_Digit    ; If it's not 0, there are more digits to
+                                  ; store in the stack. Since the quotient is
+                                  ; already in eax, we just need to clear edx
+                                  ; and repeat.
+
+              ; If we arrived here, all the digits are neatly stacked and ready
+              ; to be printed. We now use ecx as a loop variable to print each
+              ; digit in the stack.
+
+WI_P_Digit:   push  ecx           ; Save the value of ecx.
+
+              ; Print the number digit in the stack.
+
+              mov   eax, 4
+              mov   ebx, 1
+              mov   ecx, esp
+              add   ecx, 4        ; Remeber, the old ecx was pushed to the
+                                  ; stack. So the digit is in esp + 4.
+              mov   edx, 1
+              int   0x80
+
+              pop   ecx           ; Restore the value of ecx.
+              add   esp, 1        ; Burn the digit printed from the stack.
+              add   esi, 1        ; Increase the count of digits printed.
+
+              loop  WI_P_Digit    ; While there are digits left to be printed,
+                                  ; loop back.
+
+              ; If we got here, all the digits have been printed. Now we just
+              ; move the number of chars printed from esi to eax and we're done!
+
+              mov   eax, esi
+
+              ; Restore the values of the registers used.
+
+              pop   esi
+              pop   edx
+              pop   ecx
+              pop   ebx
+
+              leave           ; Destroy the previously created stack frame.
+
+              ret   4         ; Return from the function call.
+                              ; And burn 1 function parameter from the stack!
+
+; Function to read a character (Label id: RC).
+;
+; Parameters:
+;   Address where the char will be saved (4 bytes).
+;
 LerChar:
 
               enter 0, 0      ; Create a stack frame.
@@ -54,9 +180,9 @@ LerChar:
               leave           ; Destroy the previously created stack frame.
 
               ret   4         ; Return from the function call.
-                              ; 1 parameter pushed into the pile is gone!
+                              ; And burn 1 function parameter from the stack!
 
-; Procedure to write a character.
+; Function to write a character.
 EscreverChar:
 
   enter 0, 0      ; Create a stack frame.
@@ -65,7 +191,12 @@ EscreverChar:
 
 ret
 
-; Procedure to read a string.
+; Function to read a string (Label id: RS).
+;
+; Parameters:
+;   Address where the string will be saved (4 bytes).
+;   Maximum number of chars to read (Must have 4 bytes!).
+;
 LerString:
 
               enter 0, 0      ; Create a stack frame.
@@ -85,7 +216,7 @@ LerString:
               mov   esi, [ebp + 12]         ; Load esi with the address for the
                                             ; start of the string.
 
-LS_char_loop: push  eax                     ; Save the char count.
+RS_char_loop: push  eax                     ; Save the char count.
               push  ecx                     ; Save the loop count.
 
               ; Read one char to the next position in the string.
@@ -104,13 +235,13 @@ LS_char_loop: push  eax                     ; Save the char count.
               ; If we got a '\n', the string is over.
 
               cmp   BYTE [esi], 0x0A
-              je    LS_loop_end
+              je    RS_loop_end
 
               ; Else, we increase the count and update the string address.
 
               add   eax, 1
               add   esi, 4          ; Remember, our chars have 4 bytes.
-              loop  LS_char_loop
+              loop  RS_char_loop
 
               ; If we got to this point, the string is full. But, there might
               ; be an incoming '\n' to finish the string. So, let's just try to
@@ -133,7 +264,7 @@ LS_char_loop: push  eax                     ; Save the char count.
 
               pop   eax             ; Restore the char count.
 
-LS_loop_end:
+RS_loop_end:
 
               ; Restore the values of the registers used.
 
@@ -145,9 +276,9 @@ LS_loop_end:
               leave           ; Destroy the previously created stack frame.
 
               ret   8         ; Return from the function call.
-                              ; 2 parameter pushed into the pile are gone!
+                              ; And burn 2 function parameters from the stack!
 
-; Procedure to write a character.
+; Function to write a character.
 EscreverString:
 
   enter 0, 0      ; Create a stack frame.
@@ -156,7 +287,7 @@ EscreverString:
 
 ret
 
-; Procedure to warn when a multiplication cause an overflow.
+; Function to warn when a multiplication cause an overflow.
 OverflowWarning:
 
   enter 0, 0      ; Create a stack frame.
