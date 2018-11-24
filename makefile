@@ -19,7 +19,7 @@ SDIR = src
 
 # Lista de dependências do projeto (arquivos .h).
 
-_DEPS = asm_file.hpp error_logger.hpp translator.hpp
+_DEPS = asm_file.hpp error_logger.hpp line.hpp translator.hpp
 
 # Lista de arquivos intermediários de compilação gerados pelo projeto
 # (arquivos .o).

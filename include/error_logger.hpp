@@ -14,17 +14,18 @@ using namespace std;
 // Enumerations:
 typedef enum {
   FATAL,
-  STANDARD,
+  ERROR,
   WARNING
 } ErrorSeverity;
 
 typedef enum {
   ARGS = 1,
   IO = 2,
-  TRANSLATION = 3,
+  DATA_OVERWRITE = 3,
   INSTRUCTION = 4,
-  OVERFLOW = 5,
-  OTHER = 6
+  PRE_PROCESSING = 5,
+  TRANSLATION = 6,
+  OTHER = 7
 } ErrorType;
 
 // Class headers:
@@ -38,7 +39,7 @@ class ErrorLogger {
     // Class methods:
     ErrorLogger(string);
     ~ErrorLogger();
-    int print_error(ErrorSeverity, ErrorType, string = "", int = -1);
+    int log_error(ErrorSeverity, ErrorType, string = "", int = -1);
 
 };
 

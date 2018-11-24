@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# Items added by developers
+
+# Executable's name:
+tradutor
+
+# Assembly IA-32 output files:
+*.s
