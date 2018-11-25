@@ -9,29 +9,51 @@ Translator::Translator(string p_name) : error_logger(p_name) {
 }
 
 Translator::~Translator() {
-
+  for(auto const& instruction_pair : instructions_table) {
+    delete instruction_pair.second;
+  }
 }
 
-int Translator::add_instruction(string name, bool p_needs_label,
-                                unsigned int p_min_num_par,
-                                unsigned int p_max_num_par) {
-
-  // Uppercase the instruction name to avoid confusion.
-  for (auto & c: name)
-    c = toupper(c);
+int Translator::add_instruction(Instruction *instruction) {
 
   // Give warning if we overwrite anything.
-  if(instructions_table.count(name) != 0)
+  if(instructions_table.count(instruction->name) != 0)
     error_logger.log_error(WARNING, DATA_OVERWRITE,
                            "Instruction " + name + ". " +
                            "Original definition kept!");
 
   // Save instruction.
-  instructions_table.insert(make_pair(name, Instruction(p_needs_label,
-                            p_min_num_par, p_max_num_par)));
+  instructions_table[instruction->name] = instruction;
 
   return 0;
 
+}
+
+int Translator::load_default_mnemonics() {
+  int status = 0;
+  status += this->add_instruction(new InstructionAdd());
+  status += this->add_instruction(new InstructionSub());
+  status += this->add_instruction(new InstructionMult());
+  status += this->add_instruction(new InstructionDiv());
+  status += this->add_instruction(new InstructionJmp());
+  status += this->add_instruction(new InstructionJmpn());
+  status += this->add_instruction(new InstructionJmpp());
+  status += this->add_instruction(new InstructionJmpz());
+  status += this->add_instruction(new InstructionCopy());
+  status += this->add_instruction(new InstructionLoad());
+  status += this->add_instruction(new InstructionStore());
+  status += this->add_instruction(new InstructionInput());
+  status += this->add_instruction(new InstructionOutput());
+  status += this->add_instruction(new InstructionCInput());
+  status += this->add_instruction(new InstructionCOutput());
+  status += this->add_instruction(new InstructionSInput());
+  status += this->add_instruction(new InstructionSOutput());
+  status += this->add_instruction(new InstructionStop());
+
+  status += this->add_instruction(new InstructionSection());
+  status += this->add_instruction(new InstructionSpace());
+  status += this->add_instruction(new InstructionConst());
+  return status;
 }
 
 int Translator::append_functions(deque <Line> functions) {
@@ -45,21 +67,42 @@ int Translator::append_functions(deque <Line> functions) {
 
 int Translator::translate_asm_buffer() {
 
-  // This is a PLACEHOLDER CODE meant for TESTS ONLY!
-
+  int status = 0;
+  Instruction *instruction;
   deque <string> operand_list;
 
-  operand_list.push_back(".text");
-  ia32_buffer.push_back(Line(1, "", "section", operand_list));
-  operand_list.clear();
-
+  // Adiciona global _start
   operand_list.push_back("_start");
   ia32_buffer.push_back(Line(1, "", "global", operand_list));
   operand_list.clear();
 
-  ia32_buffer.push_back(Line(1, "_start", "", operand_list));
+  // Itera por todas as linhas do arquivo assembly inventado
+  for(auto const& line : this->asm_buffer){
+    instruction = this->instructions_table[line.operation];
+    if(instruction->validate(line)) {
+      for(auto const& translated_line : instruction->translate(line)) {
+        ia32_buffer.push_back(translated_line);
+      }
+    } else {
+      error_logger.log_error(ERROR, INSTRUCTION,
+      "Instruction "+ line.operation +" does not exists! Ignoring line and going on...",
+      line.number);
+      status++;
+    }
+  }
 
-  return 0;
+  /*
+  operand_list.push_back(".text");
+  ia32_buffer.push_back(Line(1, "", "section", operand_list));
+  operand_list.clear();
+
+
+  ia32_buffer.push_back(Line(1, "_start", "", operand_list));
+  */
+
+  ia32_buffer.push_back(Line(-1,"","",operand_list));
+
+  return status;
 
 }
 
@@ -83,16 +126,16 @@ void Translator::print_instructions() {
     cout << instruction.first << ": " << endl;
     cout << "Requires label: ";
 
-    if(instruction.second.needs_label)
+    if(instruction.second->needs_label)
       cout << "True" << endl;
 
     else
       cout << "False" << endl;
 
-    cout << "Minimum number of parameters: " << instruction.second.min_num_par;
+    cout << "Minimum number of parameters: " << instruction.second->min_num_par;
     cout << endl;
 
-    cout << "Maximum number of parameters: " << instruction.second.max_num_par;
+    cout << "Maximum number of parameters: " << instruction.second->max_num_par;
     cout << endl;
 
     cout << endl;

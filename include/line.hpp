@@ -1,4 +1,4 @@
-// Line data strucutre module - Header file.
+// Line data structure module - Header file.
 
 // Define guard:
 #ifndef LINE_H_
