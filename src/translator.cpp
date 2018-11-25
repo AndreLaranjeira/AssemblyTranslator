@@ -12,6 +12,12 @@ Translator::~Translator() {
   for(auto const& instruction_pair : instructions_table) {
     delete instruction_pair.second;
   }
+  for(auto line : asm_buffer){
+    delete line;
+  }
+  for(auto line : ia32_buffer){
+    delete line;
+  }
 }
 
 int Translator::add_instruction(Instruction *instruction) {
@@ -56,10 +62,10 @@ int Translator::load_default_mnemonics() {
   return status;
 }
 
-int Translator::append_functions(deque <Line> functions) {
+int Translator::append_functions(deque <Line*> functions) {
 
-  for(auto const& function : functions)
-    ia32_buffer.push_back(function);
+  for(auto function : functions)
+    ia32_buffer.push_back(new Line(*function));
 
   return 0;
 
@@ -73,34 +79,37 @@ int Translator::translate_asm_buffer() {
 
   // Adiciona global _start
   operand_list.push_back("_start");
-  ia32_buffer.push_back(Line(1, "", "global", operand_list));
+  ia32_buffer.push_back(new Line(1, "", "global", operand_list));
   operand_list.clear();
 
   // Itera por todas as linhas do arquivo assembly inventado
-  for(auto const& line : this->asm_buffer){
-    instruction = this->instructions_table[line.operation];
-    if(instruction->validate(line)) {
-      for(auto const& translated_line : instruction->translate(line)) {
+  for(auto line : this->asm_buffer){
+    instruction = this->instructions_table[line->operation];
+    if(instruction != nullptr && instruction->validate(line)) {
+      for(auto translated_line : instruction->translate(line)) {
         ia32_buffer.push_back(translated_line);
       }
     } else {
       error_logger.log_error(ERROR, INSTRUCTION,
-      "Instruction "+ line.operation +" does not exists! Ignoring line and going on...",
-      line.number);
+      "Instruction "+ line->to_string() +" does not exists! Ignoring line and going on...",
+      line->number);
       status++;
     }
   }
 
   /*
   operand_list.push_back(".text");
-  ia32_buffer.push_back(Line(1, "", "section", operand_list));
+  ia32_buffer.push_back(new Line(1, "", "section", operand_list));
   operand_list.clear();
 
 
-  ia32_buffer.push_back(Line(1, "_start", "", operand_list));
+  ia32_buffer.push_back(new Line(1, "_start", "", operand_list));
   */
 
-  ia32_buffer.push_back(Line(-1,"","",operand_list));
+  // Linha em branco por estética
+  ia32_buffer.push_back(new Line(-1,"","",operand_list));
+  operand_list.push_back(".text");
+  ia32_buffer.push_back(new Line(-1,"","section",operand_list));
 
   return status;
 
@@ -145,13 +154,15 @@ void Translator::print_instructions() {
 }
 
 // Getters:
-deque <Line> Translator::get_ia32_buffer() {
+deque <Line*> Translator::get_ia32_buffer() {
   return ia32_buffer;
 }
 
 // Setters:
-void Translator::set_asm_buffer(deque <Line> p_asm_buffer) {
-  asm_buffer = p_asm_buffer;
+void Translator::set_asm_buffer(deque <Line*> p_asm_buffer) {
+  for(auto line : p_asm_buffer){
+    asm_buffer.push_back(new Line(*line));
+  }
 }
 
 void Translator::set_debug_mode(bool p_debug_mode) {

@@ -23,7 +23,7 @@ class AsmFile {
 
   private:
     // Variables:
-    deque <Line> buffer;
+    deque <Line*> buffer;
     ErrorLogger error_logger;
     fstream file_pointer;
     map <string, string> aliases_table;
@@ -49,10 +49,10 @@ class AsmFile {
     void print_buffer();
 
     // Getters:
-    deque <Line> get_buffer();
+    deque <Line*> get_buffer();
 
     // Setters:
-    void set_buffer(deque <Line>);
+    void set_buffer(deque <Line*>);
 
 };
 

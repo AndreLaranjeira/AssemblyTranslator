@@ -1,5 +1,6 @@
 ; Auxiliary procedures used for file translation.
 
+; TODO: codar LerInteiro
 ; Function to read an integer.
 LerInteiro:
 
@@ -182,6 +183,7 @@ LerChar:
               ret   4         ; Return from the function call.
                               ; And burn 1 function parameter from the stack!
 
+; TODO: codar EscreverChar
 ; Function to write a character.
 EscreverChar:
 
@@ -278,6 +280,7 @@ RS_loop_end:
               ret   8         ; Return from the function call.
                               ; And burn 2 function parameters from the stack!
 
+; TODO: codar EscreverString
 ; Function to write a character.
 EscreverString:
 
@@ -287,6 +290,7 @@ EscreverString:
 
 ret
 
+; TODO: codar OverflowWarning
 ; Function to warn when a multiplication cause an overflow.
 OverflowWarning:
 

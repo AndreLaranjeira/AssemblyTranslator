@@ -17,6 +17,8 @@ AsmFile::AsmFile(string p_file_name, string p_file_ext, ios::openmode mode):
 AsmFile::~AsmFile() {
   if(file_pointer.is_open())
     file_pointer.close();
+  for(auto line : buffer)
+    delete line;
 }
 
 bool AsmFile::is_open() {
@@ -59,7 +61,7 @@ int AsmFile::parse_file(bool format_case) {
       operand_list = split_string(", ", operands);
 
       if(formated_line != "")
-        buffer.push_back(Line(line_num, label, operation, operand_list));
+        buffer.push_back(new Line(line_num, label, operation, operand_list));
 
     }
 
@@ -182,7 +184,7 @@ int AsmFile::pre_process(bool format_case) {
       }
 
       else if(formated_line != "")
-        buffer.push_back(Line(line_num, label, operation, operand_list));
+        buffer.push_back(new Line(line_num, label, operation, operand_list));
 
     }
 
@@ -207,27 +209,9 @@ int AsmFile::pre_process(bool format_case) {
 
 int AsmFile::write_buffer_contents() {
 
-  for(auto const& line : buffer) {
+  for(auto line : buffer) {
 
-    if(line.label != "")
-      file_pointer << line.label << ":\t";
-
-    if(line.operation != "")
-      file_pointer << line.operation;
-
-    for(auto iter = line.operand_list.begin(); iter != line.operand_list.end();
-        iter++) {
-
-      if (iter != line.operand_list.begin())
-        file_pointer << ", ";
-
-      else
-        file_pointer << " ";
-
-      file_pointer << *iter;
-
-    }
-
+    file_pointer << line->to_string();
     file_pointer << endl;
 
   }
@@ -245,19 +229,19 @@ void AsmFile::print_buffer() {
   cout << "[DEBUG] Buffer contents for file " + file_name + file_ext << ":";
   cout << endl;
 
-  for(auto const& line : buffer) {
-    cout << line.number << " - ";
+  for(auto line : buffer) {
+    cout << line->number << " - ";
 
-    if(line.label != "")
-      cout << line.label << ": ";
+    if(line->label != "")
+      cout << line->label << ": ";
 
-    if(line.operation != "")
-      cout << line.operation;
+    if(line->operation != "")
+      cout << line->operation;
 
-    for(auto iter = line.operand_list.begin(); iter != line.operand_list.end();
+    for(auto iter = line->operand_list.begin(); iter != line->operand_list.end();
         iter++) {
 
-      if (iter != line.operand_list.begin())
+      if (iter != line->operand_list.begin())
         cout << ", ";
 
       else
@@ -276,13 +260,15 @@ void AsmFile::print_buffer() {
 }
 
 // Getters:
-deque <Line> AsmFile::get_buffer() {
+deque <Line*> AsmFile::get_buffer() {
   return buffer;
 }
 
 // Setters:
-void AsmFile::set_buffer(deque <Line> p_buffer) {
-  buffer = p_buffer;
+void AsmFile::set_buffer(deque <Line*> p_buffer) {
+  for(auto line : p_buffer){
+    buffer.push_back(new Line(*line));
+  }
 }
 
 // Private methods:
