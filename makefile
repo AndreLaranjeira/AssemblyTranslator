@@ -57,11 +57,11 @@ $(EXE): $(OBJ)
 
 ASM_ODIR = test/obj
 ASM_SDIR = test
-_ASM_SRC = bin.s fat.s test.s triangulo.s
+_ASM_SRC = bin.s fat.s test.s triangulo.s strings.s
 ASM_SRC = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_SRC))
-_ASM_OBJ = bin.o fat.o test.o triangulo.o
+_ASM_OBJ = bin.o fat.o test.o triangulo.o strings.o
 ASM_OBJ = $(patsubst %,$(ASM_ODIR)/%,$(_ASM_OBJ))
-_ASM_OUT = bin.out fat.out triangulo.out test.out
+_ASM_OUT = bin.out fat.out triangulo.out string.out
 ASM_OUT = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_OUT))
 
 test: $(ASM_OUT) $(ASM_OBJ) $(ASM_SRC)
