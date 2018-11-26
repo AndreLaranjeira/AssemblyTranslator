@@ -428,7 +428,8 @@ EscreverString:
 
 WS_Loop:
   ;mov byte [edi], 0           ; cleans recepient
-  mov byte [edi], byte [esi]  ; moves char
+  mov al, byte [esi]          ; moves char
+  mov byte [edi], al          ; moves char
   add esi, 4                  ; next 4 byte char
   inc edi                     ; next 1 byte char
   dec ecx                     ; reduces counter
