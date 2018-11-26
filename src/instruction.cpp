@@ -327,15 +327,14 @@ deque<Line*> InstructionInput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back("LerInteiro");
-  new_line = new Line(original->number, "", "call", operands);
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back("dword [" + original->operand_list[0] + "]");
-  operands.push_back("eax");
-  new_line = new Line(original->number, "", "mov", operands);
+  operands.push_back("LerInteiro");
+  new_line = new Line(original->number, "", "call", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 

@@ -1,5 +1,7 @@
 section .data
 OverflowMessage: db "Você multiplicou dois números grandes demais", 0ah, 0
+section .bss
+AuxiliaryString: resb 101 ; Reserves a 100 chars string
 section .text
 ; Auxiliary procedures used for file translation.
 
@@ -28,6 +30,7 @@ LerInteiro:
   mov edx, 12       ; 11 for number and signal plus \0 or \n
   int 80h	          ; system call
 
+  push eax          ; Saves number of bytes read
   mov esi, ecx      ; esi is the char *
   mov ecx, eax      ; ecx now has the number of bytes read
   dec ecx           ; excluded the \n
@@ -81,6 +84,11 @@ RI_Error:
   ;jmp RI_End ; finishes execution
 
 RI_End:
+
+  ; organize outputs
+  mov dword [ebp+8], eax    ; Saves the number on the first argument
+  pop eax                   ; pops the number of bytes read
+
   ; Load back registers
   pop edi
   pop esi
@@ -90,7 +98,7 @@ RI_End:
 
   leave           ; Destroy the previously created stack frame.
 
-  ret
+  ret 4           ; Deletes the argument
 
 ;------------------------------------------------------------------------------
 
@@ -407,16 +415,32 @@ EscreverString:
   push ebx
   push ecx
   push edx
+  push esi
+  push edi
 
-  mov eax, 4          ; Write
-  mov ebx, 1          ; Stdout
-  mov ecx, [ebp+12]   ; First argument (farthest from ebp) string
-  mov edx, [ebp+8]    ; Second argument (nearest from ebp) length
+  mov ecx, [ebp+8]          ; Letters counter
+  mov esi, [ebp+12]         ; Original string
+  mov edi, AuxiliaryString  ; Compressed string
+
+WS_Loop:
+  ;mov byte [edi], 0           ; cleans recepient
+  mov byte [edi], byte [esi]  ; moves char
+  add esi, 4                  ; next 4 byte char
+  inc edi                     ; next 1 byte char
+  dec ecx                     ; reduces counter
+  jnz WS_Loop                 ; do it until the strings ends
+
+  mov eax, 4                  ; Write
+  mov ebx, 1                  ; Stdout
+  mov ecx, AuxiliaryString    ; First argument (farthest from ebp) string
+  mov edx, [ebp+8]            ; Second argument (nearest from ebp) length
 
   ; Restoring registers
-  push ebx
-  push ecx
-  push edx
+  pop edi
+  pop esi
+  pop ebx
+  pop ecx
+  pop edx
 
   leave           ; Destroy the previously created stack frame.
 
