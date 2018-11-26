@@ -1,4 +1,5 @@
 #include <deque>
+#include <string>
 #include <iostream>
 #include <sstream>
 #include "line.hpp"
@@ -23,6 +24,32 @@ size_t num_non_null_operands(deque<string> operands)
     }
   }
   return num_operands;
+}
+
+Arg translate_address(string arg)
+{
+  string::iterator i;
+  stringstream out, number, number_converted;
+  int status = 0, converted;
+  for(i=arg.begin(); i!=arg.end(); ++i){
+    if(status == 0 && *i == '+'){
+      status = 1;
+    } else if(status == 0) {
+      out << *i;
+    } else if(status == 1) {
+      number << *i;
+    }
+  }
+
+  if(number.str() != ""){
+    number >> converted;
+  } else {
+    converted = 0;
+  }
+  converted *= 4;
+  number_converted << converted;
+
+  return Arg(out.str(), number_converted.str());
 }
 
 Instruction::Instruction(string p_name = "",
@@ -79,9 +106,10 @@ deque<Line*> InstructionAdd::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
-  operands.push_back("["+ original->operand_list.front() +"]");
+  operands.push_back("["+ operand.base +"+"+ operand.index +"]");
   new_line = new Line(original->number, original->label, "add", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -95,9 +123,10 @@ deque<Line*> InstructionSub::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
-  operands.push_back("["+ original->operand_list.front() +"]");
+  operands.push_back("["+ operand.base +"+"+ operand.index +"]");
   new_line = new Line(original->number, original->label, "sub", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -115,10 +144,12 @@ deque<Line*> InstructionMult::translate(Line* original)
   Line* new_line;
   stringstream jump;
   jump << jump_name << jump_name_counter++;
+  Arg operand = translate_address(original->operand_list[0]);
+
 
 
   // imul dword [OP] ; Already saves on eax
-  operands.push_back("dword ["+ original->operand_list.front() +"]");
+  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
   new_line = new Line(original->number, original->label, "imul", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -172,12 +203,13 @@ deque<Line*> InstructionDiv::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   new_line = new Line(original->number, original->label, "cdq", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
-  operands.push_back("dword ["+ original->operand_list.front() +"]");
+  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
   new_line = new Line(original->number, "", "idiv", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -272,15 +304,17 @@ deque<Line*> InstructionCopy::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand1 = translate_address(original->operand_list[0]);
+  Arg operand2 = translate_address(original->operand_list[1]);
 
   operands.push_back("ebx");
-  operands.push_back("dword [" + original->operand_list[0] + "]");
+  operands.push_back("dword ["+ operand1.base +"+"+ operand1.index +"]");
   new_line = new Line(original->number, original->label, "mov", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back("dword [" + original->operand_list[1] + "]");
+  operands.push_back("dword ["+ operand2.base +"+"+ operand2.index +"]");
   operands.push_back("ebx");
   new_line = new Line(original->number, "", "mov", operands);
   new_line->comment = original->to_string();
@@ -295,9 +329,10 @@ deque<Line*> InstructionLoad::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
-  operands.push_back("dword [" + original->operand_list[0] + "]");
+  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
   new_line = new Line(original->number, original->label, "mov", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -311,8 +346,10 @@ deque<Line*> InstructionStore::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
-  operands.push_back("dword [" + original->operand_list[0] + "]");
+
+  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "mov", operands);
   new_line->comment = original->to_string();
@@ -327,6 +364,7 @@ deque<Line*> InstructionInput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -334,7 +372,21 @@ deque<Line*> InstructionInput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -359,6 +411,7 @@ deque<Line*> InstructionOutput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -366,7 +419,21 @@ deque<Line*> InstructionOutput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -392,6 +459,7 @@ deque<Line*> InstructionCInput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -399,7 +467,21 @@ deque<Line*> InstructionCInput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -424,6 +506,7 @@ deque<Line*> InstructionCOutput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -431,7 +514,21 @@ deque<Line*> InstructionCOutput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -456,6 +553,7 @@ deque<Line*> InstructionSInput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -463,7 +561,21 @@ deque<Line*> InstructionSInput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -493,7 +605,9 @@ bool InstructionSInput::validate(Line* line)
 {
   bool result = Instruction::validate(line);
 
-  if (stoi(line->operand_list[0]) > 100) {
+  if (result && stoi(line->operand_list[1]) > 100) {
+    cout << "Operation: " << line->operation << " has a number of chars to read too big" <<endl;
+    cout << "Argument must be smaller than 100." << endl;
     result = false;
   }
 
@@ -505,6 +619,7 @@ deque<Line*> InstructionSOutput::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   new_line = new Line(original->number, original->label, "push", operands);
@@ -512,7 +627,21 @@ deque<Line*> InstructionSOutput::translate(Line* original)
   lines.push_back(new_line);
 
   operands.clear();
-  operands.push_back(original->operand_list[0]);
+  operands.push_back("ebx");
+  operands.push_back(operand.base);
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
+  operands.push_back(operand.index);
+  new_line = new Line(original->number, "", "add", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("ebx");
   new_line = new Line(original->number, "", "push", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -542,7 +671,9 @@ bool InstructionSOutput::validate(Line* line)
 {
   bool result = Instruction::validate(line);
 
-  if (stoi(line->operand_list[0]) > 100) {
+  if (result && stoi(line->operand_list[1]) > 100) {
+    cout << "Operation: " << line->operation << " has a number of chars to read too big" <<endl;
+    cout << "Argument must be smaller than 100." << endl;
     result = false;
   }
 

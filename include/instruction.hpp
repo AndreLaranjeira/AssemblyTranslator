@@ -7,8 +7,19 @@
 
 using namespace std;
 
+struct Arg {
+  string base;
+  string index;
+  Arg(string p_base, string p_index)
+  {
+    base = p_base;
+    index = p_index;
+  }
+};
+
 string lower_case(string);
 size_t num_non_null_operands(deque<string>);
+Arg translate_address(string);
 
 class Instruction {
 public:
@@ -122,6 +133,7 @@ class InstructionSInput:public Instruction {
 public:
   InstructionSInput() : Instruction("S_INPUT", false, 2, 2){}
   deque<Line*> translate(Line*);
+  bool validate(Line*);
 };
 
 class InstructionSOutput:public Instruction {
