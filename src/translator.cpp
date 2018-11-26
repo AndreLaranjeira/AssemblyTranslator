@@ -108,8 +108,6 @@ int Translator::translate_asm_buffer() {
 
   // Linha em branco por estética
   ia32_buffer.push_back(new Line(-1,"","",operand_list));
-  operand_list.push_back(".text");
-  ia32_buffer.push_back(new Line(-1,"","section",operand_list));
 
   return status;
 

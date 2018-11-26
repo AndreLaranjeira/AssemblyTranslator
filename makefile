@@ -91,7 +91,7 @@ _ASM_SRC = bin.s bin2.s fat.s test.s triangulo.s
 ASM_SRC = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_SRC))
 _ASM_OBJ = bin.o bin2.o fat.o test.o triangulo.o
 ASM_OBJ = $(patsubst %,$(ASM_ODIR)/%,$(_ASM_OBJ))
-_ASM_OUT = bin2.out fat.out triangulo.out test.out bin.out
+_ASM_OUT = bin.out bin2.out fat.out triangulo.out test.out
 ASM_OUT = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_OUT))
 
 test: $(ASM_OUT) $(ASM_OBJ) $(ASM_SRC)

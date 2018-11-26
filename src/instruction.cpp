@@ -123,15 +123,27 @@ deque<Line*> InstructionMult::translate(Line* original)
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
-  // cmp edx, 0 ; tests if edx is not 0
+  // pushf -> flags are in dword [esp]
   operands.clear();
-  operands.push_back("edx");
-  operands.push_back("0");
-  new_line = new Line(original->number, "", "cmp", operands);
+  new_line = new Line(original->number, "", "pushf", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
-  // jz MULT_cont1 ; if edx is 0, there's no overflow
+  // tidy up the stack
+  operands.clear();
+  new_line = new Line(original->number, "", "popf", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  // tests the bit OF in the flags
+  operands.clear();
+  operands.push_back("dword [esp-4]");
+  operands.push_back("0800h"); // it is on bit 11
+  new_line = new Line(original->number, "", "test", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  // jz MULT_cont1 ; if OF is 0, there's no overflow
   operands.clear();
   operands.push_back(jump.str());
   new_line = new Line(original->number, "", "jz", operands);
@@ -303,63 +315,209 @@ deque<Line*> InstructionStore::translate(Line* original)
 }
 
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionInput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("LerInteiro");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("dword [" + original->operand_list[0] + "]");
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "mov", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionOutput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("EscreverInteiro");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionCInput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  // C_INPUT OP -> push eax | push OP | call LerChar | pop eax
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("LerChar");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionCOutput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("EscreverChar");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionSInput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[1]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("LerString");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
-// TODO: determinar certinho como chamar as subrotinas
 deque<Line*> InstructionSOutput::translate(Line* original)
 {
-  Line* new_line = new Line(*original);
-  new_line->label = "placeholder_"+original->label;
+  deque<string> operands;
   deque<Line*> lines;
+  Line* new_line;
+
+  operands.push_back("eax");
+  new_line = new Line(original->number, original->label, "push", operands);
+  new_line->comment = original->to_string();
   lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[0]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back(original->operand_list[1]);
+  new_line = new Line(original->number, "", "push", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("EscreverString");
+  new_line = new Line(original->number, "", "call", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
+  operands.push_back("eax");
+  new_line = new Line(original->number, "", "pop", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
   return lines;
 }
 
@@ -372,7 +530,7 @@ deque<Line*> InstructionStop::translate(Line* original)
   Line* new_line;
 
   operands.push_back("eax");
-  operands.push_back("0");
+  operands.push_back("1");
   new_line = new Line(original->number, original->label, "mov", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
