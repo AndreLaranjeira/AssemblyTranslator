@@ -52,6 +52,18 @@ Arg translate_address(string arg)
   return Arg(out.str(), number_converted.str());
 }
 
+bool is_number(string arg)
+{
+  string::iterator i;
+  bool is = true;
+  for(i=arg.begin(); i!=arg.end();++i){
+    if('0'>*i && *i>'9'){
+      is = false;
+    }
+  }
+  return is;
+}
+
 Instruction::Instruction(string p_name = "",
                          bool p_needs_label = false,
                          unsigned int p_min_num_par = 0,
@@ -106,10 +118,15 @@ deque<Line*> InstructionAdd::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
-  Arg operand = translate_address(original->operand_list[0]);
+  Arg operand;
 
   operands.push_back("eax");
-  operands.push_back("["+ operand.base +"+"+ operand.index +"]");
+  if(!is_number(original->operand_list[0])){
+    operand = translate_address(original->operand_list[0]);
+    operands.push_back("["+ operand.base +"+"+ operand.index +"]");
+  } else {
+    operands.push_back(original->operand_list[0]);
+  }
   new_line = new Line(original->number, original->label, "add", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -123,10 +140,15 @@ deque<Line*> InstructionSub::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
-  Arg operand = translate_address(original->operand_list[0]);
+  Arg operand;
 
   operands.push_back("eax");
-  operands.push_back("["+ operand.base +"+"+ operand.index +"]");
+  if(!is_number(original->operand_list[0])){
+    operand = translate_address(original->operand_list[0]);
+    operands.push_back("["+ operand.base +"+"+ operand.index +"]");
+  } else {
+    operands.push_back(original->operand_list[0]);
+  }
   new_line = new Line(original->number, original->label, "sub", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);

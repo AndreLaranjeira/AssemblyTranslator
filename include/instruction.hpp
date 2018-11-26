@@ -20,6 +20,7 @@ struct Arg {
 string lower_case(string);
 size_t num_non_null_operands(deque<string>);
 Arg translate_address(string);
+bool is_number(string);
 
 class Instruction {
 public:
