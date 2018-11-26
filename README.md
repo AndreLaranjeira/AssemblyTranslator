@@ -14,3 +14,5 @@ André Laranjeira | 16/0023777 | Manjaro linux 64-bit
 Victor André Gris Costa | 16/0019311 | WSL Ubuntu 14.04 no Windows 10 64-bit
 
 ### Compilação e Execução do Código:
+
+Para compilar o código basta executar o comando `make` no diretório raiz do projeto. Para executar e traduzir um programa apenas execute `./tradutor nome_sem_asm`. Nós preparamos uns arquivos de teste na pasta `./test` . O arquivo teste.asm (nesse momento que escrevo) possui erros e não gerará saída. Você também pode traduzir, compilar e ligar (obs.: ld -m elf_i386...) usando o comando `make test`. Os *.s e *.out serão gerados na mesma pasta do arquivos *.asm.
