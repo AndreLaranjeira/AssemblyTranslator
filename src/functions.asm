@@ -86,7 +86,8 @@ RI_Error:
 RI_End:
 
   ; organize outputs
-  mov dword [ebp+8], eax    ; Saves the number on the first argument
+  mov ebx, dword [ebp+8]    ; Loads first argument (char*)
+  mov dword [ebx], eax      ; Saves the number on the first argument
   pop eax                   ; pops the number of bytes read
 
   ; Load back registers
@@ -298,8 +299,9 @@ EscreverChar:
 
   mov eax, 4        ; Write
   mov ebx, 1        ; Stdout
-  mov ecx, [ebp+4]  ; string at ebp+4
+  mov ecx, [ebp+8]  ; string at ebp+8
   mov edx, 1        ; 1 char
+  int 80h	          ; syscall
 
   ; Restores used registers
   pop edx
@@ -439,6 +441,7 @@ WS_Loop:
   mov ebx, 1                  ; Stdout
   mov ecx, AuxiliaryString    ; First argument (farthest from ebp) string
   mov edx, [ebp+8]            ; Second argument (nearest from ebp) length
+  int 80h	                    ; syscall
 
   ; Restoring registers
   pop edi
@@ -463,7 +466,8 @@ OverflowWarning:
   mov eax, 4                ; Write
   mov ebx, 1                ; Stdout
   mov ecx, OverflowMessage  ; char pointer to the string
-  mov edx, 45               ; length of the string
+  mov edx, 47               ; length of the string
+  int 80h	                  ; syscall
 
   popa                      ; restores all
 

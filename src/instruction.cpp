@@ -57,7 +57,7 @@ bool is_number(string arg)
   string::iterator i;
   bool is = true;
   for(i=arg.begin(); i!=arg.end();++i){
-    if('0'>*i && *i>'9'){
+    if('0'>*i || *i>'9'){
       is = false;
     }
   }
@@ -118,11 +118,10 @@ deque<Line*> InstructionAdd::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
-  Arg operand;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   if(!is_number(original->operand_list[0])){
-    operand = translate_address(original->operand_list[0]);
     operands.push_back("["+ operand.base +"+"+ operand.index +"]");
   } else {
     operands.push_back(original->operand_list[0]);
@@ -140,11 +139,10 @@ deque<Line*> InstructionSub::translate(Line* original)
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
-  Arg operand;
+  Arg operand = translate_address(original->operand_list[0]);
 
   operands.push_back("eax");
   if(!is_number(original->operand_list[0])){
-    operand = translate_address(original->operand_list[0]);
     operands.push_back("["+ operand.base +"+"+ operand.index +"]");
   } else {
     operands.push_back(original->operand_list[0]);
@@ -171,7 +169,11 @@ deque<Line*> InstructionMult::translate(Line* original)
 
 
   // imul dword [OP] ; Already saves on eax
-  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
+  if(!is_number(original->operand_list[0])){
+    operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
+  } else {
+    operands.push_back(original->operand_list[0]);
+  }
   new_line = new Line(original->number, original->label, "imul", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
@@ -231,7 +233,11 @@ deque<Line*> InstructionDiv::translate(Line* original)
   new_line->comment = original->to_string();
   lines.push_back(new_line);
 
-  operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
+  if(!is_number(original->operand_list[0])){
+    operands.push_back("dword ["+ operand.base +"+"+ operand.index +"]");
+  } else {
+    operands.push_back(original->operand_list[0]);
+  }
   new_line = new Line(original->number, "", "idiv", operands);
   new_line->comment = original->to_string();
   lines.push_back(new_line);
