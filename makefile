@@ -48,17 +48,40 @@ $(EXE): $(OBJ)
 
 # Lista de comandos adicionais do makefile.
 
+.PHONY: test
 .PHONY: clean
 .PHONY: structure
 .PHONY: verification
-.PHONY: test
+
+# Comando para testar automaticamente a compilação
+
+ASM_ODIR = test/obj
+ASM_SDIR = test
+_ASM_SRC = bin.s bin2.s fat.s test.s triangulo.s
+ASM_SRC = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_SRC))
+_ASM_OBJ = bin.o bin2.o fat.o test.o triangulo.o
+ASM_OBJ = $(patsubst %,$(ASM_ODIR)/%,$(_ASM_OBJ))
+_ASM_OUT = bin.out bin2.out fat.out triangulo.out test.out
+ASM_OUT = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_OUT))
+
+test: $(ASM_OUT) $(ASM_OBJ) $(ASM_SRC)
+
+$(ASM_SDIR)/%.s: $(ASM_SDIR)/%.asm $(EXE)
+	./$(EXE) $(basename $<)
+
+$(ASM_ODIR)/%.o: $(ASM_SDIR)/%.s
+	nasm -f elf -o $@ $<
+
+$(ASM_SDIR)/%.out: $(ASM_ODIR)/%.o
+	ld -m elf_i386 -o $@ $<
 
 # Comando para limpar o executável do projeto e os arquivos .o.
 
 clean:
 	@rm -f $(ODIR)/*.o *~ core
-	@rm -f $(ASM_ODIR)/%.o *~ core
-	@rm -f $(ASM_SDIR)/%.s *~ core
+	@rm -f $(ASM_ODIR)/*.o *~ core
+	@rm -f $(ASM_SDIR)/*.s *~ core
+	@rm -f $(ASM_SDIR)/*.out *~ core
 	@if [ -f $(EXE) ]; then rm $(EXE) -i; fi
 
 # Comando para gerar a estrutura inicial do projeto.
@@ -82,25 +105,3 @@ structure:
 verification:
 	cppcheck $(SRC) ./$(EXE) --enable=all
 	valgrind --leak-check=full ./$(EXE)
-
-# Comando para testar automaticamente a compilação
-
-ASM_ODIR = test/obj
-ASM_SDIR = test
-_ASM_SRC = bin.s bin2.s fat.s test.s triangulo.s
-ASM_SRC = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_SRC))
-_ASM_OBJ = bin.o bin2.o fat.o test.o triangulo.o
-ASM_OBJ = $(patsubst %,$(ASM_ODIR)/%,$(_ASM_OBJ))
-_ASM_OUT = bin.out bin2.out fat.out triangulo.out test.out
-ASM_OUT = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_OUT))
-
-test: $(ASM_OUT) $(ASM_OBJ) $(ASM_SRC)
-
-$(ASM_SDIR)/%.s: $(ASM_SDIR)/%.asm $(EXE)
-	./$(EXE) $(basename $<)
-
-$(ASM_ODIR)/%.o: $(ASM_SDIR)/%.s
-	nasm -f elf -o $@ $<
-
-$(ASM_SDIR)/%.out: $(ASM_ODIR)/%.o
-	ld -m elf_i386 -o $@ $<
