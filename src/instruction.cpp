@@ -489,6 +489,17 @@ deque<Line*> InstructionSInput::translate(Line* original)
   return lines;
 }
 
+bool InstructionSInput::validate(Line* line)
+{
+  bool result = Instruction::validate(line);
+
+  if (stoi(line->operand_list[0]) > 100) {
+    result = false;
+  }
+
+  return result;
+}
+
 deque<Line*> InstructionSOutput::translate(Line* original)
 {
   deque<string> operands;
@@ -527,6 +538,16 @@ deque<Line*> InstructionSOutput::translate(Line* original)
   return lines;
 }
 
+bool InstructionSOutput::validate(Line* line)
+{
+  bool result = Instruction::validate(line);
+
+  if (stoi(line->operand_list[0]) > 100) {
+    result = false;
+  }
+
+  return result;
+}
 
 deque<Line*> InstructionStop::translate(Line* original)
 {

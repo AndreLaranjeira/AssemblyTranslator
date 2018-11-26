@@ -128,6 +128,7 @@ class InstructionSOutput:public Instruction {
 public:
   InstructionSOutput() : Instruction("S_OUTPUT", false, 2, 2){}
   deque<Line*> translate(Line*);
+  bool validate(Line*);
 };
 
 class InstructionStop:public Instruction {
