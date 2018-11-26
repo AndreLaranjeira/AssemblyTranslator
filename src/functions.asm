@@ -387,6 +387,10 @@ RS_char_loop:
 
 RS_loop_end:
 
+  ; End the string read with a '\0'.
+
+  mov   BYTE [esi], 0x00
+
   ; Restore the values of the registers used.
 
   pop   esi
@@ -401,7 +405,7 @@ RS_loop_end:
 
 ;------------------------------------------------------------------------------
 
-; Function to write a character.
+; Function to read a string.
 ;
 ; Parameters:
 ;   Address where the string was saved (4 bytes).
