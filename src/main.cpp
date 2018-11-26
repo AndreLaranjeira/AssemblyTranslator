@@ -12,7 +12,7 @@
 using namespace std;
 
 // Macros:
-#define DEBUG true
+#define DEBUG false
 #define FUNCTIONS_FILE "src/functions"
 
 // Enums:
