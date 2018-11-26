@@ -246,11 +246,18 @@ deque<Line*> InstructionJmpp::translate(Line* original)
 
 deque<Line*> InstructionJmpz::translate(Line* original)
 {
-  // JMPZ OP -> jz OP ; jumps if zero
+  // JMPZ OP -> cmp eax, 0 ; generates flags | jz OP ; jumps if zero
   deque<string> operands;
   deque<Line*> lines;
   Line* new_line;
 
+  operands.push_back("eax");
+  operands.push_back("0");
+  new_line = new Line(original->number, original->label, "cmp", operands);
+  new_line->comment = original->to_string();
+  lines.push_back(new_line);
+
+  operands.clear();
   operands.push_back(original->operand_list.front());
   new_line = new Line(original->number, original->label, "jz", operands);
   new_line->comment = original->to_string();

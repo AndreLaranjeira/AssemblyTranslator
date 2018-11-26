@@ -90,7 +90,7 @@ RI_End:
 
   leave           ; Destroy the previously created stack frame.
 
-  ret
+  ret 4           ; Deletes arguments
 
 ;------------------------------------------------------------------------------
 
@@ -379,6 +379,10 @@ RS_char_loop:
 
 RS_loop_end:
 
+  ; End the string read with a '\0'.
+
+  mov   BYTE [esi], 0x00
+
   ; Restore the values of the registers used.
 
   pop   esi
@@ -393,7 +397,7 @@ RS_loop_end:
 
 ;------------------------------------------------------------------------------
 
-; Function to write a character.
+; Function to read a string.
 ;
 ; Parameters:
 ;   Address where the string was saved (4 bytes).
@@ -408,10 +412,45 @@ EscreverString:
   push ecx
   push edx
 
-  mov eax, 4          ; Write
-  mov ebx, 1          ; Stdout
-  mov ecx, [ebp+12]   ; First argument (farthest from ebp) string
-  mov edx, [ebp+8]    ; Second argument (nearest from ebp) length
+  sub   eax, eax                ; Clear eax. It will be used to
+                                ; count the number of chars printed.
+  mov   ecx, [ebp + 8]          ; Load ecx with the maximum ammout
+                                ; of chars to be printed.
+  mov   esi, [ebp + 12]         ; Load esi with the address for the
+                                ; start of the string.
+
+WS_char_loop:
+
+  ; If we got a '\0', the string is over.
+
+  cmp   BYTE [esi], 0x00
+  je    WS_loop_end
+
+  ; Else, we print a char.
+
+  push  eax                     ; Save the char count.
+  push  ecx                     ; Save the loop count.
+
+  ; Print one char to the next position in the string.
+
+  mov   eax, 4
+  mov   ebx, 1
+  mov   ecx, esi
+  mov   edx, 1
+  int   0x80
+
+  ; Restore the values for the loop count and the char count.
+
+  pop   ecx
+  pop   eax
+
+  ; Increase the count and update the string address.
+
+  add   eax, 1
+  add   esi, 4          ; Remember, our chars have 4 bytes.
+  loop  WS_char_loop
+
+WS_loop_end:
 
   ; Restoring registers
   push ebx
