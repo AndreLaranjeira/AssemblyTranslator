@@ -12,7 +12,7 @@
 using namespace std;
 
 // Macros:
-#define DEBUG true
+#define DEBUG false
 #define FUNCTIONS_FILE "src/functions"
 
 // Enums:
@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]) {
   AsmFile *functions, *input, *output;
   ErrorLogger error_logger("Main.cpp");
   string message;
-  Translator translator("IA-32 traslator");
+  Translator translator("IA-32 translator");
 
   translator.set_debug_mode(DEBUG); // Sets up possible debug mode.
 
@@ -77,28 +77,7 @@ int main(int argc, char const *argv[]) {
   delete input;
 
   // Load instructions into translator.
-  translator.add_instruction("ADD", false, 1, 1);
-  translator.add_instruction("SUB", false, 1, 1);
-  translator.add_instruction("MULT", false, 1, 1);
-  translator.add_instruction("DIV", false, 1, 1);
-  translator.add_instruction("JMP", false, 1, 1);
-  translator.add_instruction("JMPN", false, 1, 1);
-  translator.add_instruction("JMPP", false, 1, 1);
-  translator.add_instruction("JMPZ", false, 1, 1);
-  translator.add_instruction("COPY", false, 2, 2);
-  translator.add_instruction("LOAD", false, 1, 1);
-  translator.add_instruction("STORE", false, 1, 1);
-  translator.add_instruction("INPUT", false, 1, 1);
-  translator.add_instruction("OUTPUT", false, 1, 1);
-  translator.add_instruction("C_INPUT", false, 1, 1);
-  translator.add_instruction("C_OUTPUT", false, 1, 1);
-  translator.add_instruction("S_INPUT", false, 2, 2);
-  translator.add_instruction("S_OUTPUT", false, 2, 2);
-  translator.add_instruction("STOP", false, 0, 0);
-
-  translator.add_instruction("SECTION", false, 1, 1);
-  translator.add_instruction("SPACE", true, 0, 1);
-  translator.add_instruction("CONST", true, 1, 1);
+  translator.load_default_mnemonics();
 
   cout << "::Translator parameters successfully loaded!" << endl;
 

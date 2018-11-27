@@ -14,24 +14,10 @@
 
 #include "error_logger.hpp"
 #include "line.hpp"
+#include "instruction.hpp"
 
 // Namespace:
 using namespace std;
-
-// Structs:
-struct Instruction {
-  bool needs_label;
-  unsigned int min_num_par;
-  unsigned int max_num_par;
-
-  Instruction(bool p_needs_label, unsigned int p_min_num_par,
-              unsigned int p_max_num_par) {
-    needs_label = p_needs_label;
-    min_num_par = p_min_num_par;
-    max_num_par = p_max_num_par;
-  }
-
-};
 
 // Class headers:
 class Translator {
@@ -39,9 +25,9 @@ class Translator {
   private:
     // Variables:
     bool debug_mode;
-    deque <Line> asm_buffer, ia32_buffer;
+    deque <Line*> asm_buffer, ia32_buffer;
     ErrorLogger error_logger;
-    map <string, Instruction> instructions_table;
+    map <string, Instruction*> instructions_table;
     string name;
 
     // Methods:
@@ -50,8 +36,9 @@ class Translator {
     // Class methods:
     Translator(string);
     ~Translator();
-    int add_instruction(string, bool, unsigned int, unsigned int);
-    int append_functions(deque <Line>);
+    int add_instruction(Instruction*);
+    int load_default_mnemonics();
+    int append_functions(deque <Line*>);
     int translate_asm_buffer();
 
     // Debug methods:
@@ -60,10 +47,10 @@ class Translator {
     void print_instructions();
 
     // Getters:
-    deque <Line> get_ia32_buffer();
+    deque <Line*> get_ia32_buffer();
 
     // Setters:
-    void set_asm_buffer(deque <Line>);
+    void set_asm_buffer(deque <Line*>);
     void set_debug_mode(bool);
 
 };

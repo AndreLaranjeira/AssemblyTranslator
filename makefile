@@ -19,16 +19,16 @@ SDIR = src
 
 # Lista de dependências do projeto (arquivos .h).
 
-_DEPS = asm_file.hpp error_logger.hpp line.hpp translator.hpp
+_DEPS = asm_file.hpp error_logger.hpp line.hpp translator.hpp instruction.hpp
 
 # Lista de arquivos intermediários de compilação gerados pelo projeto
 # (arquivos .o).
 
-_OBJ = asm_file.o error_logger.o main.o translator.o
+_OBJ = asm_file.o error_logger.o main.o translator.o instruction.o line.o
 
 # Lista de arquivos fontes utilizados para compilação.
 
-_SRC = asm_file.cpp error_logger.cpp main.cpp translator.cpp
+_SRC = asm_file.cpp error_logger.cpp main.cpp translator.cpp instruction.cpp line.cpp
 
 # Junção dos nomes de arquivos com seus respectivos caminhos.
 
@@ -48,14 +48,40 @@ $(EXE): $(OBJ)
 
 # Lista de comandos adicionais do makefile.
 
+.PHONY: test
 .PHONY: clean
 .PHONY: structure
 .PHONY: verification
+
+# Comando para testar automaticamente a compilação
+
+ASM_ODIR = test/obj
+ASM_SDIR = test
+_ASM_SRC = bin.s fat.s triangulo.s strings.s chars.s overflow_mul.s
+ASM_SRC = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_SRC))
+_ASM_OBJ = bin.o fat.o triangulo.o strings.o chars.o overflow_mul.o
+ASM_OBJ = $(patsubst %,$(ASM_ODIR)/%,$(_ASM_OBJ))
+_ASM_OUT = bin.out fat.out triangulo.out strings.out chars.out overflow_mul.out
+ASM_OUT = $(patsubst %,$(ASM_SDIR)/%,$(_ASM_OUT))
+
+test: $(ASM_OUT) $(ASM_OBJ) $(ASM_SRC)
+
+$(ASM_SDIR)/%.s: $(ASM_SDIR)/%.asm $(EXE)
+	./$(EXE) $(basename $<)
+
+$(ASM_ODIR)/%.o: $(ASM_SDIR)/%.s
+	nasm -f elf -o $@ $<
+
+$(ASM_SDIR)/%.out: $(ASM_ODIR)/%.o
+	ld -m elf_i386 -o $@ $<
 
 # Comando para limpar o executável do projeto e os arquivos .o.
 
 clean:
 	@rm -f $(ODIR)/*.o *~ core
+	@rm -f $(ASM_ODIR)/*.o *~ core
+	@rm -f $(ASM_SDIR)/*.s *~ core
+	@rm -f $(ASM_SDIR)/*.out *~ core
 	@if [ -f $(EXE) ]; then rm $(EXE) -i; fi
 
 # Comando para gerar a estrutura inicial do projeto.
