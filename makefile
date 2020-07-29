@@ -39,6 +39,7 @@ SRC = $(patsubst %,$(SDIR)/%,$(_SRC))
 # Atualização de arquivos que foram alterados.
 
 $(ODIR)/%.o: $(SDIR)/%$(EXT) $(DEPS)
+	@if ! [ -d $(ODIR) ]; then mkdir -p $(ODIR); fi
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # Compilação do executável do projeto.
@@ -70,6 +71,7 @@ $(ASM_SDIR)/%.s: $(ASM_SDIR)/%.asm $(EXE)
 	./$(EXE) $(basename $<)
 
 $(ASM_ODIR)/%.o: $(ASM_SDIR)/%.s
+	@if ! [ -d $(ASM_ODIR) ]; then mkdir -p $(ASM_ODIR); fi
 	nasm -f elf -o $@ $<
 
 $(ASM_SDIR)/%.out: $(ASM_ODIR)/%.o
@@ -82,6 +84,8 @@ clean:
 	@rm -f $(ASM_ODIR)/*.o *~ core
 	@rm -f $(ASM_SDIR)/*.s *~ core
 	@rm -f $(ASM_SDIR)/*.out *~ core
+	@if [ -d $(ODIR) ]; then rmdir $(ODIR); fi
+	@if [ -d $(ASM_ODIR) ]; then rmdir $(ASM_ODIR); fi
 	@if [ -f $(EXE) ]; then rm $(EXE) -i; fi
 
 # Comando para gerar a estrutura inicial do projeto.

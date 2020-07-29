@@ -2,9 +2,7 @@
 
 ## Descrição
 
-Programa para traduzir um arquivo na linguagem assembly inventada da disciplina
-para assembly intel 32 bits. Trabalho 02 da disciplina Software básico 2018/2
-da Universidade de Brasília.
+Programa para traduzir um arquivo na linguagem assembly inventada da disciplina para assembly intel 32 bits. Trabalho 02 da disciplina Software básico 2018/2 da Universidade de Brasília.
 
 ## Integrantes:
 
