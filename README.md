@@ -8,7 +8,7 @@ Programa para traduzir um arquivo na linguagem assembly inventada da disciplina 
 
 Nome | Matrícula | Sistema operacional
 ---  | --- | ---
-André Laranjeira | 16/0023777 | Manjaro linux 64-bit
+André Filipe Caldas Laranjeira | 16/0023777 | Manjaro linux 64-bit
 Victor André Gris Costa | 16/0019311 | WSL Ubuntu 14.04 no Windows 10 64-bit
 
 ## Compilação e execução do código
